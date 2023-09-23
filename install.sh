@@ -32,12 +32,25 @@ install_apache_env() {
     echo "Apache Development Environment installed and configured."
 }
 
+# Function to install and configure Nginx Development Environment
+install_nginx_env() {
+    sudo apt-get update
+    sudo apt-get install -y nginx git php php-fpm php-mysql phpmyadmin mysql-server ufw
+    sudo systemctl enable nginx
+    sudo systemctl start nginx
+    sudo systemctl enable mysql
+    sudo systemctl start mysql
+    sudo systemctl enable php7.4-fpm
+    sudo systemctl start php7.4-fpm
+    echo "Nginx Development Environment installed and configured."
+}
+
 # Function to allow the user to select apps for the Custom Development Environment
 install_custom_env() {
     selected_apps=()
     
     PS3="Select the apps you want for the Custom Development Environment (press Enter after each selection, 'Done' to finish): "
-    options=("Node.js" "Apache" "Git" "PHP" "phpMyAdmin" "MySQL" "UFW" "Done")
+    options=("Node.js" "Apache" "Nginx" "Git" "PHP" "phpMyAdmin" "MySQL" "UFW" "Done")
     
     while true; do
         select opt in "${options[@]}"; do
@@ -47,6 +60,9 @@ install_custom_env() {
                     ;;
                 "Apache")
                     selected_apps+=("apache2" "php" "php-mysql" "phpmyadmin" "mysql-server")
+                    ;;
+                "Nginx")
+                    selected_apps+=("nginx" "php" "php-fpm" "php-mysql" "phpmyadmin" "mysql-server")
                     ;;
                 "Git")
                     selected_apps+=("git")
@@ -79,8 +95,21 @@ install_custom_env() {
     sudo apt-get install -y "${selected_apps[@]}"
     sudo systemctl enable mysql
     sudo systemctl start mysql
-    sudo systemctl enable apache2
-    sudo systemctl start apache2
+
+    # Enable and start the web server (Apache or Nginx)
+    if [[ " ${selected_apps[@]} " =~ "apache2" || " ${selected_apps[@]} " =~ "nginx" ]]; then
+        if [[ " ${selected_apps[@]} " =~ "apache2" ]]; then
+            sudo systemctl enable apache2
+            sudo systemctl start apache2
+        fi
+        if [[ " ${selected_apps[@]} " =~ "nginx" ]]; then
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+            sudo systemctl enable php7.4-fpm
+            sudo systemctl start php7.4-fpm
+        fi
+    fi
+
     echo "Custom Development Environment installed and configured."
 }
 
@@ -98,7 +127,7 @@ display_credit_text
 create_user
 
 echo "Select a development environment:"
-select env in "Node.js Development Environment" "Apache Development Environment" "Custom Development Environment" "Quit"
+select env in "Node.js Development Environment" "Apache Development Environment" "Nginx Development Environment" "Custom Development Environment" "Quit"
 do
     case $env in
         "Node.js Development Environment")
@@ -106,6 +135,9 @@ do
             ;;
         "Apache Development Environment")
             install_apache_env
+            ;;
+        "Nginx Development Environment")
+            install_nginx_env
             ;;
         "Custom Development Environment")
             install_custom_env
