@@ -116,7 +116,7 @@ install_custom_env() {
 # Display a custom credit text
 display_credit_text() {
     echo -e "\n----------------------------------"
-    echo "This script was built by Your Name"
+    echo "This script was built by Erandi Suli"
     echo "----------------------------------"
     sleep 2s
 }
